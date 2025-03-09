@@ -61,3 +61,47 @@ export const signUp = async (req, res) => {
         res.status(500).send({ message: error.message });
     }
 }
+
+export const signIn = async (req,res) => {
+    try {
+
+        const {email,password} = req.body;
+
+        const user = await User.findOne({email:email});
+
+        if(!user){
+            return res.status(400).send({ message: "Invalid credentials" });
+        }
+
+        const isMatch = await bcrypt.compare(password,user.password)
+
+        if(!isMatch){
+            return res.status(400).send({ message: "Invalid credentials" });
+        }
+
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+        res.status(200).json({
+            token,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email
+            }
+        });
+        
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+}
+
+export const signOut = async(req, res, next) => {
+    try {
+        res.status(200).json({
+            success: true,
+            message: 'Signed out successfully'
+        });
+    } catch (error) {
+        next(error);
+    }
+}
