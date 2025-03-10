@@ -1,118 +1,66 @@
-import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
+import mongoose from "mongoose";
 
-const RecipeSchema = new Schema({
+const RecipeSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
-    trim: true
   },
   description: {
     type: String,
     required: true,
-    trim: true
   },
-  image: {
+  difficulty: {
     type: String,
-    validate: {
-      validator: function(v) {
-        return /^https?:\/\/.+/.test(v);
-      },
-      message: props => `${props.value} is not a valid URL!`
-    }
+    enum: ["easy", "medium", "hard"],
+    required: true,
+  },
+  cuisine: {
+    type: String,
+    required: true,
+  },
+  mealType: {
+    type: String,
+    required: true,
+  },
+  category: {
+    type: String,
+    required: true,
   },
   prepTime: {
-    type: String,
+    type: Number, // Time in minutes
     required: true,
-    trim: true
   },
   cookTime: {
-    type: String,
+    type: Number, // Time in minutes
     required: true,
-    trim: true
-  },
-  totalTime: {
-    type: String,
-    trim: true
   },
   servings: {
     type: Number,
     required: true,
-    min: 1
   },
   ingredients: {
-    type: [String],
+    type: [String], // Array of ingredient strings
     required: true,
-    validate: {
-      validator: function(v) {
-        return v.length > 0;
-      },
-      message: 'At least one ingredient is required'
-    }
   },
   instructions: {
-    type: [String],
+    type: [String], // Array of step-by-step instructions
     required: true,
-    validate: {
-      validator: function(v) {
-        return v.length > 0;
-      },
-      message: 'At least one instruction is required'
-    }
   },
-  tags: {
-    type: [String],
-    default: []
+  imageURL: {
+    type: String, // URL of the recipe image
+    required: false,
   },
-  nutrition: {
-    calories: Number,
-    fat: Number,
-    carbs: Number,
-    protein: Number
+  uploadedBy: {
+    type: mongoose.Schema.Types.ObjectId, // Reference to the User model
+    ref: "User",
+    required: true,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  },
-  isVegan: {
+  isPublished: {
     type: Boolean,
-    default: false
+    default: false,
   },
-  isVegetarian: {
-    type: Boolean,
-    default: false
-  },
-  isGlutenFree: {
-    type: Boolean,
-    default: false
-  },
-  difficulty: {
-    type: String,
-    enum: ['Easy', 'Medium', 'Hard'],
-    default: 'Medium'
-  },
-  author: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  }
-});
+}, { timestamps: true });
 
-RecipeSchema.virtual('calculatedTotalTime').get(function() {
-  return this.totalTime || `${this.prepTime} + ${this.cookTime}`;
-});
-
-// Pre-save hook to update the updatedAt field
-RecipeSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
-});
-RecipeSchema.index({ title: 'text', description: 'text', tags: 'text' });
-
-const Recipe = model('Recipe', RecipeSchema);
+const Recipe = mongoose.model("Recipe", RecipeSchema);
 
 export default Recipe;
