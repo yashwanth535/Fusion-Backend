@@ -153,14 +153,12 @@ export const googleAuth = async (req, res) => {
       await user.save();
     }
     
-    // Generate JWT token
     const token = jwt.sign(
-      { id: user._id },
+      { userId: user._id },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRY }
     );
     
-    // Return user data and token
     res.status(200).json({
       token,
       user: {

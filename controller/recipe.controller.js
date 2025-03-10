@@ -169,3 +169,75 @@ export const fetchUserRecipes = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+export const getAllRecipes = async (req, res) => {
+    try {
+
+        const recipes = await Recipe.find({ isPublished: true });
+
+        res.status(200).json({
+            success: true,
+            data: recipes
+        });
+        
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+export const deleteRecipe = async (req, res) => {
+    try {
+
+        const id = req.params.id;
+
+        const recipe = await Recipe.findByIdAndDelete(id);
+
+        if(!recipe){
+            return res.status(404).json({ message: "Recipe not found" });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: recipe
+        });
+        
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+export const getCategoryStats = async (req, res) => {
+  try {
+    const categoryStats = await Recipe.aggregate([
+      { $match: { isPublished: true } },
+      {
+        $group: {
+          _id: '$category',
+          count: { $sum: 1 },
+          recipes: { 
+            $push: { 
+              title: '$title',
+              imageURL: '$imageURL'
+            } 
+          }
+        }
+      },
+      {
+        $project: {
+          category: '$_id',
+          count: 1,
+          // Get the most recent image from the category
+          image: { $arrayElemAt: ['$recipes.imageURL', 0] },
+          _id: 0
+        }
+      }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: categoryStats
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
