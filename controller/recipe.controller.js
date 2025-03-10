@@ -91,15 +91,17 @@ Return only the structured JSON response as specified above.
 export const saveRecipe = async (req, res) => {
     try {
 
-        const { title, description, difficulty, cuisine, mealType, category, prepTime, cookTime, servings, ingredients, instructions, imageURL, isPublished } = req.body;
+        const { title, description, difficulty, cuisine, mealType, category, prepTime, cookTime, servings, ingredients, instructions, image, isPublished } = req.body;
 
-        if (!title || !description || !difficulty || !cuisine || !mealType || !category || !prepTime || !cookTime || !servings || !ingredients || !instructions || !isPublished) {
+        if (!title || !description || !difficulty || !cuisine || !mealType || !category || !prepTime || !cookTime || !servings || !ingredients || !instructions || !isPublished || !image) {
             return res.status(400).json({ message: "Missing required fields" });
         }
         
         if(!req.user){
             return res.status(401).json({ message: "Unauthorized" });
         }
+        
+        const imageURL = image;
 
         const newRecipe = new Recipe({
             title,
@@ -144,6 +146,23 @@ export const fetchRecipe = async (req, res) => {
         res.status(200).json({
             success: true,
             data: recipe
+        });
+        
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+export const fetchUserRecipes = async (req, res) => {
+    try {
+
+        const id = req.params.id;
+
+        const recipes = await Recipe.find({ uploadedBy: id });
+
+        res.status(200).json({
+            success: true,
+            data: recipes
         });
         
     } catch (error) {

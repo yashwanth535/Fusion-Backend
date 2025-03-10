@@ -48,7 +48,7 @@ const RecipeSchema = new mongoose.Schema({
   },
   imageURL: {
     type: String, // URL of the recipe image
-    required: false,
+    required: true,
   },
   uploadedBy: {
     type: mongoose.Schema.Types.ObjectId, // Reference to the User model
@@ -57,7 +57,7 @@ const RecipeSchema = new mongoose.Schema({
   },
   isPublished: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 }, { timestamps: true });
 
