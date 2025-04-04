@@ -107,7 +107,6 @@ export const signOut = async(req, res, next) => {
     }
 }
 
-// Google authentication controller
 export const googleAuth = async (req, res) => {
   try {
     const { credential } = req.body;
@@ -115,8 +114,6 @@ export const googleAuth = async (req, res) => {
     if (!credential) {
       return res.status(400).json({ message: 'Google credential is required' });
     }
-
-    // Verify the Google token
     const ticket = await client.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID
