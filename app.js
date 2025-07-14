@@ -11,24 +11,28 @@ dotenv.config();
 
 const app = express();
 
-const allowedOrigins = [process.env.REACT_URL];
+const allowedOrigins = process.env.REACT_URL?.split(",") || [];
+  console.log("CORS Origin:", process.env.REACT_URL);
 
-app.use(cors({
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true
-}));
+  const corsOptions = {
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+  };
 
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  next();
-});
-
-
-app.use(express.json());
-app.use(cookieParser());
+  app.use(cors(corsOptions));
+  app.options('*', cors(corsOptions));
+  app.use(cookieParser());
+  app.set("trust proxy", 1);
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
